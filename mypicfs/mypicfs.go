@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	picfs "devel.dob.sk/go-picfs/fs"
-	"devel.dob.sk/go-picfs/picasa"
+	picfs "devel.dob.sk/go-mypicfs/fs"
+	"devel.dob.sk/go-mypicfs/picasa"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/pathfs"

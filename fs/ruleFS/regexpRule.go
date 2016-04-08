@@ -8,7 +8,7 @@ import (
 //	"path/filepath"
 	"regexp"
 
-	picfs "devel.dob.sk/go-picfs/fs"
+	picfs "devel.dob.sk/go-mypicfs/fs"
 
 //	"github.com/hanwen/go-fuse/fuse"
 //	"github.com/hanwen/go-fuse/fuse/pathfs"

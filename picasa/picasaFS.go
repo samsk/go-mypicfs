@@ -7,8 +7,8 @@ import (
 	"strings"
 	"path/filepath"
 
-	picfs "devel.dob.sk/go-picfs/fs"
-	"devel.dob.sk/go-picfs/fs/ruleFS"
+	picfs "devel.dob.sk/go-mypicfs/fs"
+	"devel.dob.sk/go-mypicfs/fs/ruleFS"
 
 
 	"github.com/hanwen/go-fuse/fuse"
