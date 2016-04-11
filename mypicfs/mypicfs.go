@@ -15,16 +15,17 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 )
 
-
-func init() {
-
-
+func indentifyFS(sourceDir string) (fsType string) {
+	if (picasa.IdentifyPicasaFS(sourceDir)) {
+		fsType = "picasa";
+	}
+	return fsType
 }
 
 func main() {
 	// Scans the arg list and sets up flags
 	var debug = flag.Bool("debug", false, "print debugging messages")
-	var fstype = flag.String("type", "loop", "picfs type (loop, picasa)")
+	var fsType = flag.String("type", "", "picfs type (loop, picasa)")
 //	other := flag.Bool("allow-other", false, "mount with -o allowother")
 	flag.Parse()
 	if (flag.NArg() < 2) {
@@ -37,8 +38,17 @@ func main() {
 	sourceDir, _ = filepath.Abs(sourceDir)
 	mountDir := flag.Arg(1)
 
+	// auto ident FS type
+	if (*fsType == "") {
+		var ident = indentifyFS(sourceDir)
+		if (ident != "") {
+			*fsType = ident
+		}
+	}
+
+	// create object
 	var ourFS pathfs.FileSystem
-	switch (*fstype) {
+	switch (*fsType) {
 		case "loop":
 			var fs = picfs.NewLoopFS(sourceDir)
 			ourFS = &fs
@@ -46,7 +56,7 @@ func main() {
 			var fs = picasa.NewPicasaFS(sourceDir)
 			ourFS = &fs
 		default:
-			fmt.Println("ERROR: Filesystem '" + *fstype + "' not supported !")
+			fmt.Println("ERROR: Filesystem '" + *fsType + "' not supported (yet) !")
 			os.Exit(1)
 	};
 
@@ -62,7 +72,7 @@ func main() {
 
 	var mountOpts = &fuse.MountOptions{
 		AllowOther: true,
-		Name:       "picfs:" + *fstype,
+		Name:       "mypicfs:" + *fsType,
 		FsName:     sourceDir,
 	}
 	var state, err = fuse.NewServer(connector.RawFS(), mountDir, mountOpts)

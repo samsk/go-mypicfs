@@ -29,6 +29,11 @@ type rootCache struct {
 	iniFiles []string
 }
 
+func IdentifyPicasaFS(root string) bool {
+	var exists, _ = picfs.FileExists(filepath.Join(root, PICASA_INI_FILE))
+	return exists
+}
+
 func NewPicasaFS(root string) PicasaFS {
 	var loopFS = picfs.NewLoopFS(root)
 	var rules = ruleFS.NewRegexpRules()
@@ -66,9 +71,9 @@ func (fs *PicasaFS) getVPath(name string, data *ruleFS.RegexpRuleData) (string, 
 		case RULE_IDENT_ROOT_STARRED_YEAR_FILE:
 			return PICASA_INI_FILE, fuse.S_IFLNK
 		case RULE_IDENT_SUBDIR_STARRED_DIR:
-			return data.StringSubmatch[1] + "/" + PICASA_INI_FILE, fuse.S_IFDIR
+			return filepath.Join(data.StringSubmatch[1], PICASA_INI_FILE), fuse.S_IFDIR
 		case RULE_IDENT_SUBDIR_STARRED_FILE:
-			return data.StringSubmatch[1] + "/" + PICASA_INI_FILE, fuse.S_IFLNK
+			return filepath.Join(data.StringSubmatch[1], PICASA_INI_FILE), fuse.S_IFLNK
 	}
 //	panic(fmt.Sprintf("getVPath(%s, %p) - unhandled case\n", name, data))
 	return "", 0
@@ -240,13 +245,13 @@ func (fs *PicasaFS) getSubdirPicasaIniList(name string, fctx *fuse.Context) (lis
 	for _, element := range files {
 		if (element.Mode & fuse.S_IFDIR != 0) {
 			// .nomedia
-			var file = fs.loopFS.RewritePath(name + "/" + element.Name + "/" + NOMEDIA_FILE)
+			var file = fs.loopFS.RewritePath(filepath.Join(name, element.Name, NOMEDIA_FILE))
 			if (fs.loopFS.FileSystem.Access(file, fuse.R_OK, fctx) == fuse.OK) {
 				continue
 			}
 
 			// .picasa.ini
-			file = fs.loopFS.RewritePath(name + "/" + element.Name + "/" + PICASA_INI_FILE)
+			file = fs.loopFS.RewritePath(filepath.Join(name, element.Name, PICASA_INI_FILE))
 			if (fs.loopFS.FileSystem.Access(file, fuse.R_OK, fctx) == fuse.OK) {
 				list = append(list, file)
 			}
@@ -345,12 +350,12 @@ func (fs *PicasaFS) CReadlink(name string, fctx *fuse.Context, ctx picfs.Context
 
 	switch (data.Ident) {
 		case RULE_IDENT_SUBDIR_STARRED_FILE:
-			var path = "../" + data.StringSubmatch[2]
+			var path = filepath.Join("../", data.StringSubmatch[2])
 			return path, fuse.OK
 		case RULE_IDENT_ROOT_STARRED_YEAR_FILE:
 			var file = filepath.Base(name)
 			var str = strings.Split(file, "__")
-			var path = "../../" + str[0] + "/" + str[1];
+			var path = filepath.Join("../..", str[0], str[1])
 			return path, fuse.OK
 	}
 	return "", fuse.ENOSYS
